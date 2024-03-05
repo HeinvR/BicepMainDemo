@@ -1,0 +1,20 @@
+include:
+  module:
+    # Import all the Azure Well-Architected Framework rules
+    - PSRule.Rules.Azure
+ 
+configuration:
+  # Enable code analysis of bicep files
+  AZURE_BICEP_FILE_EXPANSION: true
+  # Validate that the bicep CLI is used
+  AZURE_BICEP_CHECK_TOOL: true
+
+  AZURE_PARAMETER_FILE_EXPANSION: true
+
+# YAML: Using the execution/notProcessedWarning property
+execution:
+  notProcessedWarning: false
+
+output:
+  # Show results for rules with the Fail, Pass, or Error outcome
+  outcome: 'Processed'
