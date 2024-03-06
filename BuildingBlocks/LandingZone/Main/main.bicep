@@ -12,10 +12,7 @@ param location string
 param CustomerShort string
 
 @description('Specifies if the default vNet needs to be deployed.')
-param DeployvNet bool = true
-
-@description('Specifies if the default Log Analytics workspace needs to be deployed.')
-param DeployLogAnalyticsWorkspace bool  = true
+param DeployvNet bool = false
 
 @description('Specifies if the default CustomerBackupVault needs to be deployed.')
 param DeployCustomerBackupVault bool  = false
@@ -23,52 +20,75 @@ param DeployCustomerBackupVault bool  = false
 @description('Specifies if the default EkcoBackupVault needs to be deployed.')
 param DeployEkcoBackupVault bool  = false
 
-@description('Specifies if the default ManagedIdentity needs to be deployed.')
-param DeployManagedIdentity bool  = true
+@description('''Specifies if Ekco management resources need to be deployed. This value typically is set to true if Ekco is managing the subscription. 
+The following resources will be deployed:
+- Managed Identity for automation purposes
+- Log analytics workspace for logging purposes
+- Azure Key Vault for storing secrets
+- Azure storage account for temporary of cheap storage''')
+param DeployEkcoMGTResources bool = true
 
-@description('Specifies if the default AzureKeyVault needs to be deployed.')
-param DeployAzureKeyVault bool  = true
-
-// Subnets
+// Network params
 @description('The name of the vNet that will be deployed. The default value is *customershort*-net-main and can be overwritten using this parameter.')
 param vnetName string = '${CustomerShort}-net-main'
+
 @description('The name of the resourcegroup where the networking resources will be deployed in. The default value is *customershort*-net-main-rg and can be overwritten using this parameter.')
 param vnetRGName string = '${CustomerShort}-net-main-rg'
+
 @description('The AddressPrefix of the vNet. This prefix **must** be of type array and the first prefix **must** have a CIDR of /16. De default addressPrefix is [\'10.1.0.0/16\'] and can be overwritten using this parameter.')
 param addressPrefix array = ['10.1.0.0/16']
+
+@allowed(['ErGw1AZ', 'ErGw2AZ', 'ErGw3AZ', 'HighPerformance', 'Standard', 'UltraPerformance', 'VpnGw1', 'VpnGw1AZ'
+  'VpnGw2', 'VpnGw2AZ', 'VpnGw3', 'VpnGw3AZ', 'VpnGw4', 'VpnGw4AZ', 'VpnGw5', 'VpnGw5AZ'
+])
+@description('Sku of the VPN Gateway')
+param VPNGateWaySku string = 'VpnGw1'
+
+@description('Specify whether the gateway needs to be deployed in Active-active mode. Active-active gateways have two Gateway IP configurations and two public IP addresses.')
+param VPNGwActiveActiveMode bool = false
+
 @description('''Specifies whether the 'PrivateSubnet' needs to be deployed. The default value for this parameter is 'true'. 
 The following VM's typically will be deployed in this subnet.
 - Customer and/or Ekco managed Application servers.
 - Customer and/or Ekco managed SQL servers.
 - Customer and/or Ekco managed Custom servers.
 ''')
-param DeployPrivateSubnet bool = true
+param DeployPrivateSubnet bool = false
+
 @description('''Specifies whether the 'GatewaySubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a Azure VPN Gateway resource.
 The default value for this parameter is 'false'.''')
-param DeployGatewaySubnet bool = false
+param DeployGatewaySubnetAndVpnGw bool = false
+
 @description('''Specifies whether the 'VPNPointToSiteSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a point-to-site-vpn solution.
 The default value for this parameter is 'false'.''')
 param DeployVPNPointToSiteSubnet bool = false
+
 @description('''Specifies whether the 'AzureFireWallSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy Azure Firewall.
 The default value for this parameter is 'false'.''')
 param DeployAzureFireWallSubnet bool = false
+
 @description('''Specifies whether the 'AzureBastionSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy Azure Bastion.
 The default value for this parameter is 'false'.''')
 param DeployAzureBastionSubnet bool = false
+
 @description('''Specifies whether the 'NetworkApplianceSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a NSv appliance. 
 Be aware that no UDR's will be configured via this deployment. These need to be configured manually after deployment.
 The default value for this parameter is 'false'.''')
 param DeployNetworkApplianceSubnet bool = false
+
 @description('''Specifies whether the 'PerimeterSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a perimeter subnet. 
 This subnet can be used for a traditional DMZ setup.
 The default value for this parameter is 'false'.''')
 param DeployPerimeterSubnet bool = false
+
 @description('''Specifies whether the 'ManagementSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a management subnet to host management VM's. 
 The default value for this parameter is 'false'.''')
 param DeployManagementSubnet bool = false
+
 @description('''Specifies whether the 'AzureAppGwSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a Application Gateway resource. 
 The default value for this parameter is 'false'.''')
 param DeployAzureAppGwSubnet bool = false
+
 @description('''Specifies whether the 'DesktopSubnet' needs to be deployed. 
 This value needs to be set to 'true' when you want to host an AVD solution, which must be placed within close proximity to for example SQL or Application servers, with very low latency requiments. 
 In most cases AVD deployments will be deployed in there own subscriptions via a dedicated deployment.
@@ -78,18 +98,25 @@ param DeployDesktopSubnet bool = false
 // NSG
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployPrivateSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployVPNPointToSiteSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployAzureBastionSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployNetworkApplianceSubnetNSG bool = true 
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployPerimeterSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployManagementSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployAzureAppGwSubnetNSG bool = true
+
 @description('By default every subnet will be deployed with an NSG. To overwrite this behaviour use this parameter.')
 param DeployDesktopSubnetNSG bool = true
 
@@ -109,7 +136,7 @@ var subnets = [
   {
     name: 'GatewaySubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 0)
-    deploy: DeployGatewaySubnet
+    deploy: DeployGatewaySubnetAndVpnGw
   }
   {
     name: 'AzureFireWallSubnet'
@@ -206,7 +233,7 @@ var subnets = [
   }
 ]
 
-resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = {
+resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployvNet) {
   name: vnetRGName
   location: location
   tags: {
@@ -237,7 +264,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = if (DeployvNet) 
   ]
 }
 
-module PrivateSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployPrivateSubnet && DeployPrivateSubnetNSG) {
+module PrivateSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployPrivateSubnet && DeployPrivateSubnetNSG && DeployvNet) {
   name: 'PrivateSubnet-nsg'
   scope: vnetRG
   params: {
@@ -248,7 +275,7 @@ module PrivateSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3
   }
 }
 
-module VPNPointToSiteSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployVPNPointToSiteSubnet && DeployVPNPointToSiteSubnetNSG) {
+module VPNPointToSiteSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployVPNPointToSiteSubnet && DeployVPNPointToSiteSubnetNSG && DeployvNet) {
   name: 'VPNPointToSiteSubnet-nsg'
   scope: vnetRG
   params: {
@@ -259,7 +286,7 @@ module VPNPointToSiteSubnet_nsg 'br/public:avm/res/network/network-security-grou
   }
 }
 
-module AzureBastionSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployAzureBastionSubnet && DeployAzureBastionSubnetNSG) {
+module AzureBastionSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployAzureBastionSubnet && DeployAzureBastionSubnetNSG && DeployvNet) {
   name: 'AzureBastionSubnet-nsg'
   scope: vnetRG
   params: {
@@ -411,7 +438,7 @@ module AzureBastionSubnet_nsg 'br/public:avm/res/network/network-security-group:
   }
 }
 
-module NetworkApplianceSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployNetworkApplianceSubnet && DeployNetworkApplianceSubnetNSG) {
+module NetworkApplianceSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployNetworkApplianceSubnet && DeployNetworkApplianceSubnetNSG && DeployvNet) {
   name: 'NetworkApplianceSubnet-nsg'
   scope: vnetRG
   params: {
@@ -422,7 +449,7 @@ module NetworkApplianceSubnet_nsg 'br/public:avm/res/network/network-security-gr
   }
 }
 
-module PerimeterSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployPerimeterSubnet && DeployPerimeterSubnetNSG) {  
+module PerimeterSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployPerimeterSubnet && DeployPerimeterSubnetNSG && DeployvNet) {  
   name: 'PerimeterSubnet-nsg'
   scope: vnetRG
   params: {
@@ -433,7 +460,7 @@ module PerimeterSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1
   }
 }
 
-module ManagementSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployManagementSubnet && DeployManagementSubnetNSG) {
+module ManagementSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployManagementSubnet && DeployManagementSubnetNSG && DeployvNet) {
   name: 'ManagementSubnet-nsg'
   scope: vnetRG
   params: {
@@ -444,7 +471,7 @@ module ManagementSubnet_nsg 'br/public:avm/res/network/network-security-group:0.
   }
 }
 
-module AzureAppGwSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployAzureAppGwSubnet && DeployAzureAppGwSubnetNSG) {
+module AzureAppGwSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployAzureAppGwSubnet && DeployAzureAppGwSubnetNSG && DeployvNet) {
   name: 'AzureAppGwSubnet-nsg'
   scope: vnetRG
   params: {
@@ -455,7 +482,7 @@ module AzureAppGwSubnet_nsg 'br/public:avm/res/network/network-security-group:0.
   }
 }
 
-module DesktopSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployDesktopSubnet && DeployDesktopSubnetNSG) {
+module DesktopSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' = if (DeployDesktopSubnet && DeployDesktopSubnetNSG && DeployvNet) {
   name: 'DesktopSubnet-nsg'
   scope: vnetRG
   params: {
@@ -463,5 +490,57 @@ module DesktopSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3
     tags: {
       DeploymentVersion: DeploymentVersion
     }
+  }
+}
+
+module VPNGateway 'br/public:avm/res/network/virtual-network-gateway:0.1.1' = if (DeployGatewaySubnetAndVpnGw) {
+  name: '${CustomerShort}-net-main-gw1'
+  scope: vnetRG
+  params: {
+    gatewayType: 'Vpn'
+    name: '${CustomerShort}-net-main-gw1'
+    skuName: VPNGateWaySku
+    vNetResourceId: vnet.outputs.resourceId
+    activeActive: VPNGwActiveActiveMode
+  }
+}
+
+resource EkcoMgtResourcesRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployEkcoMGTResources){
+  name: '${CustomerShort}-ekcomgtresources-rg'
+  location: location
+  tags: {
+    DeploymentVersion: DeploymentVersion
+  }
+}
+
+module ManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.1.3' = if (DeployEkcoMGTResources) {
+  name: '${CustomerShort}-main-managed-identity'
+  scope: EkcoMgtResourcesRG
+  params: {
+    name: '${CustomerShort}-main-managed-identity'
+  }
+}
+
+module LogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.3.3' = if (DeployEkcoMGTResources) {
+  name: '${CustomerShort}-main-log-analytics'
+  scope: EkcoMgtResourcesRG
+  params: {
+    name: '${CustomerShort}-main-log-analytics'
+  }
+}
+
+module KeyVault 'br/public:avm/res/key-vault/vault:0.3.5' = if (DeployEkcoMGTResources) {
+  name: '${CustomerShort}-main-key-vault'
+  scope: EkcoMgtResourcesRG
+  params: {
+    name: '${CustomerShort}-main-key-vault'
+  }
+}
+
+module StorageAccount 'br/public:avm/res/storage/storage-account:0.6.6' = if (DeployEkcoMGTResources) {
+  name: '${CustomerShort}-main-sa'
+  scope: EkcoMgtResourcesRG
+  params: {
+    name: '${CustomerShort}mainsa${substring(subscription().subscriptionId, 0, 7)}'
   }
 }

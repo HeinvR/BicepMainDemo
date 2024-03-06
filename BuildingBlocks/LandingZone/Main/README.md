@@ -1,6 +1,6 @@
 # Landing Zone - Main deployment
 
-This template is used to deploy Azure Resources in the 'Main' customer subscription. This main subscription part of the Landing zone deployment and is the foundation on which all off the ekco services built upon.
+This template is used to deploy Azure Resources in the 'Main' customer subscription. The main subscription is part of the Landing zone deployment and is the foundation on which all off the ekco services built upon.
 
 The following components can be deployed by using this template. Modify input parameters to specify which resources will be deployed 
  - Azure Virtual Network resource, including subnets and NSG's. 
@@ -15,11 +15,17 @@ Parameter name | Required | Description
 -------------- | -------- | -----------
 location       | Yes      | Location to deploy. Within Ekco NL, "westeurope" is mostly used.
 CustomerShort  | Yes      | The Customer ShortName. This name is used as a prefix for naming resources. - Value must be between 3 and 6 characters in length and may contain letters only. 
+DeployvNet     | No       | Specifies if the default vNet needs to be deployed.
+DeployCustomerBackupVault | No       | Specifies if the default CustomerBackupVault needs to be deployed.
+DeployEkcoBackupVault | No       | Specifies if the default EkcoBackupVault needs to be deployed.
+DeployEkcoMGTResources | No       | Specifies if Ekco management resources need to be deployed. This value typically is set to true if Ekco is managing the subscription.  The following resources will be deployed: - Managed Identity for automation purposes - Log analytics workspace for logging purposes - Azure Key Vault for storing secrets - Azure storage account for temporary of cheap storage
 vnetName       | No       | The name of the vNet that will be deployed. The default value is *customershort*-net-main and can be overwritten using this parameter.
 vnetRGName     | No       | The name of the resourcegroup where the networking resources will be deployed in. The default value is *customershort*-net-main-rg and can be overwritten using this parameter.
 addressPrefix  | No       | The AddressPrefix of the vNet. This prefix **must** be of type array and the first prefix **must** have a CIDR of /16. De default addressPrefix is ['10.1.0.0/16'] and can be overwritten using this parameter.
+VPNGateWaySku  | No       | Sku of the VPN Gateway
+VPNGwActiveActiveMode | No       | Specify whether the gateway needs to be deployed in Active-active mode. Active-active gateways have two Gateway IP configurations and two public IP addresses.
 DeployPrivateSubnet | No       | Specifies whether the 'PrivateSubnet' needs to be deployed. The default value for this parameter is 'true'.  The following VM's typically will be deployed in this subnet. - Customer and/or Ekco managed Application servers. - Customer and/or Ekco managed SQL servers. - Customer and/or Ekco managed Custom servers. 
-DeployGatewaySubnet | No       | Specifies whether the 'GatewaySubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a Azure VPN Gateway resource. The default value for this parameter is 'false'.
+DeployGatewaySubnetAndVpnGw | No       | Specifies whether the 'GatewaySubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a Azure VPN Gateway resource. The default value for this parameter is 'false'.
 DeployVPNPointToSiteSubnet | No       | Specifies whether the 'VPNPointToSiteSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy a point-to-site-vpn solution. The default value for this parameter is 'false'.
 DeployAzureFireWallSubnet | No       | Specifies whether the 'AzureFireWallSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy Azure Firewall. The default value for this parameter is 'false'.
 DeployAzureBastionSubnet | No       | Specifies whether the 'AzureBastionSubnet' needs to be deployed. This value needs to be set to 'true' when you want to deploy Azure Bastion. The default value for this parameter is 'false'.
@@ -51,6 +57,43 @@ The Customer ShortName. This name is used as a prefix for naming resources.
 - Value must be between 3 and 6 characters in length and may contain letters only.
 
 
+### DeployvNet
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Specifies if the default vNet needs to be deployed.
+
+- Default value: `False`
+
+### DeployCustomerBackupVault
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Specifies if the default CustomerBackupVault needs to be deployed.
+
+- Default value: `False`
+
+### DeployEkcoBackupVault
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Specifies if the default EkcoBackupVault needs to be deployed.
+
+- Default value: `False`
+
+### DeployEkcoMGTResources
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Specifies if Ekco management resources need to be deployed. This value typically is set to true if Ekco is managing the subscription. 
+The following resources will be deployed:
+- Managed Identity for automation purposes
+- Log analytics workspace for logging purposes
+- Azure Key Vault for storing secrets
+- Azure storage account for temporary of cheap storage
+
+- Default value: `True`
+
 ### vnetName
 
 ![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
@@ -75,6 +118,24 @@ The AddressPrefix of the vNet. This prefix **must** be of type array and the fir
 
 - Default value: `10.1.0.0/16`
 
+### VPNGateWaySku
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Sku of the VPN Gateway
+
+- Default value: `VpnGw1`
+
+- Allowed values: `ErGw1AZ`, `ErGw2AZ`, `ErGw3AZ`, `HighPerformance`, `Standard`, `UltraPerformance`, `VpnGw1`, `VpnGw1AZ`, `VpnGw2`, `VpnGw2AZ`, `VpnGw3`, `VpnGw3AZ`, `VpnGw4`, `VpnGw4AZ`, `VpnGw5`, `VpnGw5AZ`
+
+### VPNGwActiveActiveMode
+
+![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
+
+Specify whether the gateway needs to be deployed in Active-active mode. Active-active gateways have two Gateway IP configurations and two public IP addresses.
+
+- Default value: `False`
+
 ### DeployPrivateSubnet
 
 ![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
@@ -86,9 +147,9 @@ The following VM's typically will be deployed in this subnet.
 - Customer and/or Ekco managed Custom servers.
 
 
-- Default value: `True`
+- Default value: `False`
 
-### DeployGatewaySubnet
+### DeployGatewaySubnetAndVpnGw
 
 ![Parameter Setting](https://img.shields.io/badge/parameter-optional-green?style=flat-square)
 

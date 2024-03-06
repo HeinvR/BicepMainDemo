@@ -12,8 +12,7 @@ param MainvNetName string = '${CustomerShort}-net-main'
 param MainvNetRGName string = '${CustomerShort}-net-main-rg'
 param MainSubscriptionId string = '23582489-fe22-40f9-9af0-56ca8ef37311'
 param addressPrefix array = ['10.2.0.0/16']
-
-param UseMainRemoteGateWay bool = false
+param MainvNetGWName string = '${CustomerShort}-net-main-gw1'
 
 var subnets = [
   {
@@ -48,7 +47,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
         remoteVirtualNetworkId: resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworks', '${MainvNetName}')
         remotePeeringEnabled: true
         remotePeeringAllowGatewayTransit: true
-        useRemoteGateways: UseMainRemoteGateWay ? true : false
+        useRemoteGateways: contains(resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworkGateways', '${MainvNetGWName}'), MainvNetGWName) ? true : false
       }
     ]
     tags: {
