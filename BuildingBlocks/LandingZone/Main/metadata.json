@@ -1,0 +1,5 @@
+{
+    "itemDisplayName": "Landing Zone - Main deployment",
+    "description": ["The following components can be deployed by using this template. Modify input parameters to specify which resources will be deployed \n - Azure Virtual Network resource, including subnets and NSG's. \n - Log Analytics Workspace reource \n - Two Recovery Services Vault (for customer and ekco services) \n - A Managed Identity service principal for automation purposes \n - An Azure Keyvault for storing secrets"],
+    "summary": "This template is used to deploy Azure Resources in the 'Main' customer subscription. The main subscription is part of the Landing zone deployment and is the foundation on which all off the ekco services built upon."
+}

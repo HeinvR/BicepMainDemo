@@ -1,0 +1,3 @@
+# YAML: The default AZURE_USE_PARAMETER_FILE_SNIPPET configuration option
+configuration:
+  AZURE_USE_PARAMETER_FILE_SNIPPET: false
