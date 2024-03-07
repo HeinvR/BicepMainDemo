@@ -1,5 +1,7 @@
 
 targetScope = 'subscription'
+var DeploymentVersion = '1.0'
+param DeploymentDate string = utcNow('yyyyMMdd')
 
 @description('Location to deploy. Within Ekco NL, "westeurope" is mostly used.')
 param location string
@@ -130,8 +132,6 @@ var DeployManagementSubnetWithNSG = DeployManagementSubnet && DeployManagementSu
 var DeployAzureAppGwSubnetWithNSG = (DeployAzureAppGwSubnet && DeployAzureAppGwSubnetNSG)
 var DeployDesktopSubnetWithNSG = (DeployDesktopSubnet && DeployDesktopSubnetNSG)
 
-var DeploymentVersion = '1.0'
-
 var subnets = [
   {
     name: 'GatewaySubnet'
@@ -237,8 +237,9 @@ resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployvNet
   name: vnetRGName
   location: location
   tags: {
-    DeploymentVersion: DeploymentVersion
-  }
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
 }
 
 module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = if (DeployvNet) {
@@ -250,6 +251,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = if (DeployvNet) 
     subnets: filter(subnets, subnet => subnet.deploy == true)
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
   dependsOn: [
@@ -271,6 +273,7 @@ module PrivateSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3
     name: 'PrivateSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -282,6 +285,7 @@ module VPNPointToSiteSubnet_nsg 'br/public:avm/res/network/network-security-grou
     name: 'VPNPointToSiteSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -293,6 +297,7 @@ module AzureBastionSubnet_nsg 'br/public:avm/res/network/network-security-group:
     name: 'AzureBastionSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
     securityRules: [
       {
@@ -445,6 +450,7 @@ module NetworkApplianceSubnet_nsg 'br/public:avm/res/network/network-security-gr
     name: 'NetworkApplianceSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -456,6 +462,7 @@ module PerimeterSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1
     name: 'NetworkApplianceSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -467,6 +474,7 @@ module ManagementSubnet_nsg 'br/public:avm/res/network/network-security-group:0.
     name: 'ManagementSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -478,6 +486,7 @@ module AzureAppGwSubnet_nsg 'br/public:avm/res/network/network-security-group:0.
     name: 'AzureAppGwSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -489,6 +498,7 @@ module DesktopSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3
     name: 'DesktopSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -502,15 +512,21 @@ module VPNGateway 'br/public:avm/res/network/virtual-network-gateway:0.1.1' = if
     skuName: VPNGateWaySku
     vNetResourceId: vnet.outputs.resourceId
     activeActive: VPNGwActiveActiveMode
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
   }
+  
 }
 
 resource EkcoMgtResourcesRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployEkcoMGTResources){
   name: '${CustomerShort}-ekcomgtresources-rg'
   location: location
   tags: {
-    DeploymentVersion: DeploymentVersion
-  }
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
 }
 
 module ManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.1.3' = if (DeployEkcoMGTResources) {
@@ -518,6 +534,10 @@ module ManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identit
   scope: EkcoMgtResourcesRG
   params: {
     name: '${CustomerShort}-main-managed-identity'
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
   }
 }
 
@@ -526,6 +546,10 @@ module LogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
   scope: EkcoMgtResourcesRG
   params: {
     name: '${CustomerShort}-main-log-analytics'
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
   }
 }
 
@@ -534,6 +558,10 @@ module KeyVault 'br/public:avm/res/key-vault/vault:0.3.5' = if (DeployEkcoMGTRes
   scope: EkcoMgtResourcesRG
   params: {
     name: '${CustomerShort}-main-key-vault'
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
   }
 }
 
@@ -542,5 +570,9 @@ module StorageAccount 'br/public:avm/res/storage/storage-account:0.6.6' = if (De
   scope: EkcoMgtResourcesRG
   params: {
     name: '${CustomerShort}mainsa${substring(subscription().subscriptionId, 0, 7)}'
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
   }
 }

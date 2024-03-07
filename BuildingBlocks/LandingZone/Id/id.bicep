@@ -1,6 +1,7 @@
 
 targetScope = 'subscription'
 var DeploymentVersion = '1.0'
+param DeploymentDate string = utcNow('yyyyMMdd')
 
 param location string
 param CustomerShort string
@@ -12,7 +13,6 @@ param MainvNetName string = '${CustomerShort}-net-main'
 param MainvNetRGName string = '${CustomerShort}-net-main-rg'
 param MainSubscriptionId string = '23582489-fe22-40f9-9af0-56ca8ef37311'
 param addressPrefix array = ['10.2.0.0/16']
-param MainvNetGWName string = '${CustomerShort}-net-main-gw1'
 
 var subnets = [
   {
@@ -31,12 +31,13 @@ resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: vnetRGName
   location: location
   tags: {
-    DeploymentVersion: DeploymentVersion
-  }
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+    }
 }
 
 module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
-  name: 'idvnet'
+  name: vnetName
   scope: vnetRG
   params: {
     name: vnetName
@@ -47,11 +48,12 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
         remoteVirtualNetworkId: resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworks', '${MainvNetName}')
         remotePeeringEnabled: true
         remotePeeringAllowGatewayTransit: true
-        useRemoteGateways: contains(resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworkGateways', '${MainvNetGWName}'), MainvNetGWName) ? true : false
+        useRemoteGateways: false
       }
     ]
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
   dependsOn: [
@@ -67,6 +69,7 @@ module DomainServicesSubnet_nsg 'br/public:avm/res/network/network-security-grou
     name: 'DomainServicesSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
 }
@@ -78,6 +81,167 @@ module AdminSubnet_nsg 'br/public:avm/res/network/network-security-group:0.1.3' 
     name: 'AdminSubnet-nsg'
     tags: {
       DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
     }
   }
+}
+
+resource IdRG 'Microsoft.Resources/resourceGroups@2022-09-01' = {
+  name: '${CustomerShort}-id-rg'
+  location: location
+  tags: {
+    DeploymentVersion: DeploymentVersion
+    DeploymentDate: DeploymentDate
+  }
+}
+
+module dcc1 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
+  name: '${CustomerShort}-id-dcc1'
+  scope: IdRG
+  params: {
+    name: '${CustomerShort}-id-dcc1'
+    adminUsername: '${CustomerShort}admin'
+    adminPassword: '98*V>q0BrNKQ'
+    imageReference: {
+      publisher: 'MicrosoftWindowsServer'
+      offer: 'WindowsServer'
+      sku: '2022-datacenter-azure-edition'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        nicSuffix: '-nic'
+        deleteOption: 'Delete' // Optional. Can be 'Delete' or 'Detach'
+        ipConfigurations: [
+          {
+            name: 'ipconfig1'
+            subnetResourceId: resourceId(subscription().subscriptionId, vnetRGName, 'Microsoft.Network/virtualNetworks/subnets', vnetName, 'DomainServicesSubnet')
+          }
+        ]
+        enableAcceleratedNetworking: false
+      }
+    ]
+    osDisk: {
+      createOption: 'fromImage'
+      deleteOption: 'Detach' // Optional. Can be 'Delete' or 'Detach'
+      diskSizeGB: '128'
+      managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+    }
+    }
+    osType: 'Windows'
+    vmSize: 'Standard_B2s'
+    availabilityZone: 1
+    encryptionAtHost: false
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+      kostenplaats: 'CloudDesktop'
+    }
+  }
+  dependsOn: [vnet]
+}
+
+module dcc2 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
+  name: '${CustomerShort}-id-dcc2'
+  scope: IdRG
+  params: {
+    name: '${CustomerShort}-id-dcc2'
+    adminUsername: '${CustomerShort}admin'
+    adminPassword: '98*V>q0BrNKQ'
+    imageReference: {
+      publisher: 'MicrosoftWindowsServer'
+      offer: 'WindowsServer'
+      sku: '2022-datacenter-azure-edition'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        nicSuffix: '-nic'
+        deleteOption: 'Delete' // Optional. Can be 'Delete' or 'Detach'
+        ipConfigurations: [
+          {
+            name: 'ipconfig1'
+            subnetResourceId: resourceId(subscription().subscriptionId, vnetRGName, 'Microsoft.Network/virtualNetworks/subnets', vnetName, 'DomainServicesSubnet')
+          }
+        ]
+        enableAcceleratedNetworking: false
+      }
+    ]
+    osDisk: {
+      createOption: 'fromImage'
+      deleteOption: 'Detach' // Optional. Can be 'Delete' or 'Detach'
+      diskSizeGB: '128'
+      managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+    }
+    }
+    osType: 'Windows'
+    vmSize: 'Standard_B2s'
+    availabilityZone: 2
+    encryptionAtHost: false
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+      kostenplaats: 'CloudDesktop'
+    }
+  }
+  dependsOn: [vnet]
+}
+
+module wac 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
+  name: '${CustomerShort}-id-wac1'
+  scope: IdRG
+  params: {
+    name: '${CustomerShort}-id-wac1'
+    adminUsername: '${CustomerShort}admin'
+    adminPassword: '98*V>q0BrNKQ'
+    imageReference: {
+      publisher: 'MicrosoftWindowsServer'
+      offer: 'WindowsServer'
+      sku: '2022-datacenter-azure-edition'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        nicSuffix: '-nic'
+        deleteOption: 'Delete' // Optional. Can be 'Delete' or 'Detach'
+        ipConfigurations: [
+          {
+            name: 'ipconfig1'
+            subnetResourceId: resourceId(subscription().subscriptionId, vnetRGName, 'Microsoft.Network/virtualNetworks/subnets', vnetName, 'AdminSubnet')
+          }
+        ]
+        enableAcceleratedNetworking: false
+      }
+    ]
+    osDisk: {
+      createOption: 'fromImage'
+      deleteOption: 'Detach' // Optional. Can be 'Delete' or 'Detach'
+      diskSizeGB: '128'
+      managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+    }
+    dataDisks: [
+      {
+          caching: 'ReadOnly'
+          createOption: 'Empty'
+          deleteOption: 'Detach' // Optional. Can be 'Delete' or 'Detach'
+          diskSizeGB: '4'
+          managedDisk: {
+              storageAccountType: 'StandardSSD_LRS'
+          }
+      }
+    ]
+    }
+    osType: 'Windows'
+    vmSize: 'Standard_B2s'
+    encryptionAtHost: false
+    tags: {
+      DeploymentVersion: DeploymentVersion
+      DeploymentDate: DeploymentDate
+      kostenplaats: 'CloudDesktop'
+    }
+  }
+  dependsOn: [vnet]
 }

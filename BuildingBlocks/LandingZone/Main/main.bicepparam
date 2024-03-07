@@ -24,18 +24,6 @@ param DeployGatewaySubnetAndVpnGw = false
 param VPNGateWaySku = 'VpnGw1' // Only relevant when deploy parameter is set to true
 param VPNGwActiveActiveMode = false // Only relevant when deploy parameter is set to true
 
-/* By default an NSG will be deployed and associated with each subnet in a zero trust configuration. 
-To overwrite this behaviour for a specific subnet and ignore NSG deployment / updates, adjust the parameter(s) below.
-Usually not recommended.*/
-param DeployPrivateSubnetNSG = false
-param DeployVPNPointToSiteSubnetNSG = false
-param DeployAzureBastionSubnetNSG = false
-param DeployNetworkApplianceSubnetNSG = false 
-param DeployPerimeterSubnetNSG = false
-param DeployManagementSubnetNSG = false
-param DeployAzureAppGwSubnetNSG = false
-param DeployDesktopSubnetNSG = false
-
 // Building block components to deploy
 param DeployCustomerBackupVault = false
 param DeployEkcoBackupVault = false
