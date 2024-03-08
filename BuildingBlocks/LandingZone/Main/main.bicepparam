@@ -10,14 +10,14 @@ param vnetName = '${CustomerShort}-net-main'
 param vnetRGName = '${CustomerShort}-net-main-rg'
 param addressPrefix = ['10.1.0.0/16'] // must be a /16 prefix in an array.
 param DeployPrivateSubnet = true
-param DeployVPNPointToSiteSubnet = false
-param DeployAzureFireWallSubnet = false 
-param DeployAzureBastionSubnet = false 
-param DeployNetworkApplianceSubnet = false 
-param DeployPerimeterSubnet = false
-param DeployManagementSubnet = false
-param DeployAzureAppGwSubnet = false
-param DeployDesktopSubnet = false
+param DeployVPNPointToSiteSubnet = true
+param DeployAzureFireWallSubnet = true 
+param DeployAzureBastionSubnet = true 
+param DeployNetworkApplianceSubnet = true 
+param DeployPerimeterSubnet = true
+param DeployManagementSubnet = true
+param DeployAzureAppGwSubnet = true
+param DeployDesktopSubnet = true
 
 // VPN gateway settings
 param DeployGatewaySubnetAndVpnGw = false
@@ -29,4 +29,4 @@ param DeployCustomerBackupVault = false
 param DeployEkcoBackupVault = false
 
 // MGTresources
-param DeployEkcoMGTResources = false
+param DeployEkcoMGTResources = true

@@ -146,30 +146,30 @@ var subnets = [
   {
     name: 'VPNPointToSiteSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 20, 2)
-    networkSecurityGroupResourceId: (DeployVPNPointToSiteSubnet && DeployVPNPointToSiteSubnetNSG) ? VPNPointToSiteSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployVPNPointToSiteSubnetWithNSG) ? VPNPointToSiteSubnet_nsg.outputs.resourceId : null
     deploy: DeployVPNPointToSiteSubnetWithNSG
   }
   {
     name: 'VPNPointToSiteSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 20, 2)
-    deploy: (DeployVPNPointToSiteSubnet && !DeployVPNPointToSiteSubnetWithNSG)
+    deploy: !DeployVPNPointToSiteSubnetWithNSG
   }
   {
     name: 'AzureBastionSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 26, 10)
-    networkSecurityGroupResourceId: (DeployAzureBastionSubnet && DeployAzureBastionSubnetNSG) ? AzureBastionSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployAzureBastionSubnetWithNSG) ? AzureBastionSubnet_nsg.outputs.resourceId : null
     deploy: DeployAzureBastionSubnetWithNSG
   }
   {
     name: 'AzureBastionSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 26, 10)
-    deploy: (DeployAzureBastionSubnet && !DeployAzureBastionSubnetWithNSG)
+    deploy: !DeployAzureBastionSubnetWithNSG
   }
   {
     name: 'NetworkApplianceSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 26, 14)
-    networkSecurityGroupResourceId: (DeployNetworkApplianceSubnet && DeployNetworkApplianceSubnetNSG) ? NetworkApplianceSubnet_nsg.outputs.resourceId : null
-    deploy: DeployNetworkApplianceSubnetWithNSG
+    networkSecurityGroupResourceId: (DeployNetworkApplianceSubnetWithNSG) ? NetworkApplianceSubnet_nsg.outputs.resourceId : null
+    deploy: !DeployNetworkApplianceSubnetWithNSG
   }
   {
     name: 'NetworkApplianceSubnet'
@@ -179,41 +179,41 @@ var subnets = [
   {
     name: 'PerimeterSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 6)
-    networkSecurityGroupResourceId: (DeployPerimeterSubnet && DeployPerimeterSubnetNSG) ? PerimeterSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployPerimeterSubnetWithNSG) ? PerimeterSubnet_nsg.outputs.resourceId : null
     deploy: DeployPerimeterSubnetWithNSG
   }
   {
     name: 'PerimeterSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 6)
-    deploy: (DeployPerimeterSubnet && DeployPerimeterSubnetWithNSG)
+    deploy: !DeployPerimeterSubnetWithNSG
   }
   {
     name: 'ManagementSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 26, 16)
-    networkSecurityGroupResourceId: (DeployManagementSubnet && DeployManagementSubnetNSG) ? ManagementSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployManagementSubnetWithNSG) ? ManagementSubnet_nsg.outputs.resourceId : null
     deploy: DeployManagementSubnetWithNSG
   }
   {
     name: 'ManagementSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 26, 16)
-    deploy: (DeployManagementSubnet && !DeployManagementSubnetWithNSG)
+    deploy: !DeployManagementSubnetWithNSG
   }
   {
     name: 'AzureAppGwSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 1)
-    networkSecurityGroupResourceId: (DeployAzureAppGwSubnet && DeployAzureAppGwSubnetNSG) ? AzureAppGwSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployAzureAppGwSubnetWithNSG) ? AzureAppGwSubnet_nsg.outputs.resourceId : null
     deploy: DeployAzureAppGwSubnetWithNSG
   }
   {
     name: 'AzureAppGwSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 1)
-    deploy: (DeployAzureAppGwSubnet && !DeployAzureAppGwSubnetWithNSG)
+    deploy: !DeployAzureAppGwSubnetWithNSG
   }
   {
     name: 'PrivateSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 24, 8)
-    networkSecurityGroupResourceId: (DeployPrivateSubnet && DeployPrivateSubnetNSG) ? PrivateSubnet_nsg.outputs.resourceId : null
-    deploy: DeployPrivateSubnetWithNSG
+    networkSecurityGroupResourceId: (DeployPrivateSubnetWithNSG) ? PrivateSubnet_nsg.outputs.resourceId : null
+    deploy: !DeployPrivateSubnetWithNSG
   }
   {
     name: 'PrivateSubnet'
@@ -223,13 +223,13 @@ var subnets = [
   {
     name: 'DesktopSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 20, 1)
-    networkSecurityGroupResourceId: (DeployDesktopSubnet && DeployDesktopSubnetNSG) ? DesktopSubnet_nsg.outputs.resourceId : null
+    networkSecurityGroupResourceId: (DeployDesktopSubnetWithNSG) ? DesktopSubnet_nsg.outputs.resourceId : null
     deploy: DeployDesktopSubnetWithNSG
   }
   {
     name: 'DesktopSubnet'
     addressPrefix: cidrSubnet(addressPrefix[0], 20, 1)
-    deploy: (DeployDesktopSubnet && !DeployDesktopSubnetWithNSG)
+    deploy: !DeployDesktopSubnetWithNSG
   }
 ]
 
@@ -517,7 +517,6 @@ module VPNGateway 'br/public:avm/res/network/virtual-network-gateway:0.1.1' = if
       DeploymentDate: DeploymentDate
     }
   }
-  
 }
 
 resource EkcoMgtResourcesRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployEkcoMGTResources){

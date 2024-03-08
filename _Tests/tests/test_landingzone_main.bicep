@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
 module test_vnet_all_subnets_allnsgs '../../BuildingBlocks/LandingZone/Main/main.bicep' = {
-  name: 'all_subnets_allnsgs'
+  name: 'allsubnetsallnsgs'
   params: {
     CustomerShort: 'htavr'
     DeployPrivateSubnet: true 
@@ -14,6 +14,14 @@ module test_vnet_all_subnets_allnsgs '../../BuildingBlocks/LandingZone/Main/main
     DeployManagementSubnet: true
     DeployAzureAppGwSubnet: true
     DeployDesktopSubnet: true
+    DeployPrivateSubnetNSG: true
+    DeployVPNPointToSiteSubnetNSG: true
+    DeployAzureBastionSubnetNSG: true
+    DeployNetworkApplianceSubnetNSG: true
+    DeployPerimeterSubnetNSG: true
+    DeployManagementSubnetNSG: true
+    DeployAzureAppGwSubnetNSG: true
+    DeployDesktopSubnetNSG: true
     location: 'global'
   }
 }
