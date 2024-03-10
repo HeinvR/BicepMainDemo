@@ -233,6 +233,8 @@ var subnets = [
   }
 ]
 
+
+
 resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = if (DeployvNet) {
   name: vnetRGName
   location: location
@@ -556,7 +558,7 @@ module KeyVault 'br/public:avm/res/key-vault/vault:0.3.5' = if (DeployEkcoMGTRes
   name: '${CustomerShort}-main-key-vault'
   scope: EkcoMgtResourcesRG
   params: {
-    name: '${CustomerShort}-main-key-vault'
+    name: '${CustomerShort}-main-key-vault1'
     tags: {
       DeploymentVersion: DeploymentVersion
       DeploymentDate: DeploymentDate
