@@ -6,15 +6,14 @@ resource VMs 'Microsoft.Compute/virtualMachines@2023-03-01' existing = [for vm i
   name: '${vm}'
 }]
 
-
-resource windowsVMGuestConfigExtension 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = [for i in range(0, length(VMNames)): {
+resource windowsVMGuestConfigExtension 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' = [for i in range(0, length(VMNames)): {
   parent: VMs[i]
-  name: '${CustomerShort}-AzurePolicyforWindows'
+  name: 'AzurePolicyforWindows'
   location: location
   properties: {
     publisher: 'Microsoft.GuestConfiguration'
     type: 'ConfigurationforWindows'
-    typeHandlerVersion: '1.0'
+    typeHandlerVersion: '1.29'
     autoUpgradeMinorVersion: true
     enableAutomaticUpgrade: true
     settings: {}
@@ -22,16 +21,16 @@ resource windowsVMGuestConfigExtension 'Microsoft.Compute/virtualMachines/extens
   }
 }]
 
-resource symbolicname 'Microsoft.GuestConfiguration/guestConfigurationAssignments@2022-01-25' = [for i in range(0, length(VMNames)): {
-  name: 'MyConfig1'
+resource GuestAssignment 'Microsoft.GuestConfiguration/guestConfigurationAssignments@2020-06-25' = [for i in range(0, length(VMNames)): {
+  name: 'genericVM'
   location: location
   scope: VMs[i]
   properties: {
     guestConfiguration: {
       assignmentType: 'ApplyAndMonitor'
-      contentHash: '60DA68D666886C90E9854CD59ABAF0FF6BAD9CAF9DE6639EDFF7E194032E1941'
-      contentUri: 'https://github.com/HeinvR/TFAzureLab/raw/main/MyConfig1.zip'
-      name: 'Generic'
+      contentHash: '76D0C44421BAC21D762EBDC835D903E69EA3963B00C3A075A0CF30087B44A6EB'
+      contentUri: 'https://github.com/rednass47/testendpoint/raw/main/genericVM.zip'
+      name: 'genericVM'
       version: '1.1'
     }
   }

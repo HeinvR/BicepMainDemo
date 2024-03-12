@@ -102,6 +102,9 @@ module dcc1 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
     name: '${CustomerShort}-id-dcc1'
     adminUsername: '${CustomerShort}admin'
     adminPassword: '98*V>q0BrNKQ'
+    managedIdentities: {
+      systemAssigned: true
+    }
     imageReference: {
       publisher: 'MicrosoftWindowsServer'
       offer: 'WindowsServer'
@@ -149,6 +152,9 @@ module dcc2 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
     name: '${CustomerShort}-id-dcc2'
     adminUsername: '${CustomerShort}admin'
     adminPassword: '98*V>q0BrNKQ'
+    managedIdentities: {
+      systemAssigned: true
+    }
     imageReference: {
       publisher: 'MicrosoftWindowsServer'
       offer: 'WindowsServer'
@@ -196,6 +202,9 @@ module wac 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
     name: '${CustomerShort}-id-wac1'
     adminUsername: '${CustomerShort}admin'
     adminPassword: '98*V>q0BrNKQ'
+    managedIdentities: {
+      systemAssigned: true
+    }
     imageReference: {
       publisher: 'MicrosoftWindowsServer'
       offer: 'WindowsServer'
