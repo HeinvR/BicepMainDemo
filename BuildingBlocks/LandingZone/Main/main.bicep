@@ -542,6 +542,15 @@ module ManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identit
   }
 }
 
+// Add reader role to managed identity
+resource RoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(subscription().id, ManagedIdentity.name, 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
+  properties: {
+    principalId: ManagedIdentity.outputs.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','acdd72a7-3385-48ef-bd42-f606fba81ae7')
+  }
+}
+
 module LogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.3.3' = if (DeployEkcoMGTResources) {
   name: '${CustomerShort}-main-log-analytics'
   scope: EkcoMgtResourcesRG

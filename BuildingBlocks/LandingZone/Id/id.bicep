@@ -36,6 +36,24 @@ resource vnetRG 'Microsoft.Resources/resourceGroups@2022-09-01' = {
     }
 }
 
+module VPNGWResourceExists 'br/public:avm/res/resources/deployment-script:0.1.3' = {
+  name: 'VPNGWResourceExists'
+  scope: vnetRG
+  params: {
+    name: 'VPNGWResourceExists'
+    kind: 'AzurePowerShell'
+    azPowerShellVersion: '11.3'
+    managedIdentities: {
+      userAssignedResourcesIds: ['/subscriptions/${MainSubscriptionId}/resourceGroups/htavr-ekcomgtresources-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/htavr-main-managed-identity']
+    }
+    arguments: MainvNetRGName
+    scriptContent: '$DeploymentScriptOutputs = @{name = (Get-AzVirtualNetworkGateway -ResourcegroupName ${MainvNetRGName}).name}'
+    cleanupPreference: 'OnSuccess'
+    retentionInterval: 'P1D'
+    timeout: 'PT10M'
+  }
+}
+
 module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
   name: vnetName
   scope: vnetRG
@@ -48,7 +66,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
         remoteVirtualNetworkId: resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworks', '${MainvNetName}')
         remotePeeringEnabled: true
         remotePeeringAllowGatewayTransit: true
-        useRemoteGateways: false
+        useRemoteGateways: length(VPNGWResourceExists.outputs.outputs.name) > 0 ? true : false
       }
     ]
     tags: {
@@ -59,6 +77,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
   dependsOn: [
     DomainServicesSubnet_nsg
     AdminSubnet_nsg
+    VPNGWResourceExists
   ]
 }
 
@@ -130,8 +149,27 @@ module dcc1 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
       diskSizeGB: '128'
       managedDisk: {
         storageAccountType: 'StandardSSD_LRS'
+      }
+      tags: {
+        DeploymentVersion: DeploymentVersion
+        DeploymentDate: DeploymentDate
+        kostenplaats: 'CloudDesktop'
+      }
     }
-    }
+    dataDisks: [
+      {
+        deleteOption: 'Detach'
+        diskSizeGB: 8
+        managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+        }
+        tags: {
+          DeploymentVersion: DeploymentVersion
+          DeploymentDate: DeploymentDate
+          kostenplaats: 'CloudDesktop'
+        }
+      }
+    ]
     osType: 'Windows'
     vmSize: 'Standard_B2s'
     availabilityZone: 1
@@ -180,8 +218,27 @@ module dcc2 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
       diskSizeGB: '128'
       managedDisk: {
         storageAccountType: 'StandardSSD_LRS'
+      }
+      tags: {
+        DeploymentVersion: DeploymentVersion
+        DeploymentDate: DeploymentDate
+        kostenplaats: 'CloudDesktop'
+      }
     }
-    }
+    dataDisks: [
+      {
+        deleteOption: 'Detach'
+        diskSizeGB: 8
+        managedDisk: {
+        storageAccountType: 'StandardSSD_LRS'
+        }
+        tags: {
+          DeploymentVersion: DeploymentVersion
+          DeploymentDate: DeploymentDate
+          kostenplaats: 'CloudDesktop'
+        }
+      }
+    ]
     osType: 'Windows'
     vmSize: 'Standard_B2s'
     availabilityZone: 2
@@ -240,6 +297,11 @@ module wac 'br/public:avm/res/compute/virtual-machine:0.2.2' = {
           managedDisk: {
               storageAccountType: 'StandardSSD_LRS'
           }
+          tags: {
+            DeploymentVersion: DeploymentVersion
+            DeploymentDate: DeploymentDate
+            kostenplaats: 'CloudDesktop'
+        }
       }
     ]
     }

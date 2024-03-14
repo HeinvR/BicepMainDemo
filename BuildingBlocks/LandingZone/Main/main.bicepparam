@@ -20,7 +20,7 @@ param DeployAzureAppGwSubnet = true
 param DeployDesktopSubnet = true
 
 // VPN gateway settings
-param DeployGatewaySubnetAndVpnGw = false
+param DeployGatewaySubnetAndVpnGw = true
 param VPNGateWaySku = 'VpnGw1' // Only relevant when deploy parameter is set to true
 param VPNGwActiveActiveMode = false // Only relevant when deploy parameter is set to true
 
