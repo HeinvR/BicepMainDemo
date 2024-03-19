@@ -15,12 +15,12 @@ param DeployAzureFireWallSubnet = true
 param DeployAzureBastionSubnet = true 
 param DeployNetworkApplianceSubnet = true 
 param DeployPerimeterSubnet = true
-param DeployManagementSubnet = true
+param DeployManagementSubnet = false
 param DeployAzureAppGwSubnet = true
 param DeployDesktopSubnet = true
 
 // VPN gateway settings
-param DeployGatewaySubnetAndVpnGw = true
+param DeployGatewaySubnetAndVpnGw = false
 param VPNGateWaySku = 'VpnGw1' // Only relevant when deploy parameter is set to true
 param VPNGwActiveActiveMode = false // Only relevant when deploy parameter is set to true
 

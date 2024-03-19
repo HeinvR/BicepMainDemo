@@ -66,7 +66,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.1' = {
         remoteVirtualNetworkId: resourceId(MainSubscriptionId, MainvNetRGName, 'Microsoft.Network/virtualNetworks', '${MainvNetName}')
         remotePeeringEnabled: true
         remotePeeringAllowGatewayTransit: true
-        useRemoteGateways: length(VPNGWResourceExists.outputs.outputs.name) > 0 ? true : false
+        useRemoteGateways: VPNGWResourceExists.outputs.outputs.name != null ? true : false
       }
     ]
     tags: {
